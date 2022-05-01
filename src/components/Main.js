@@ -1,96 +1,179 @@
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import PostModal from "./PostModal";
+import ReactPlayer from "react-player";
+import { connect } from "react-redux";
+import { getArticlesAPI } from "../actions";
 
 const Main = (props) => {
+  const [showModal, setShowModal] = useState("close");
+
+  useEffect(() => {
+    props.getArticles();
+  }, []);
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    if (e.target !== e.currentTarget) {
+      return;
+    }
+
+    switch (showModal) {
+      case "open":
+        setShowModal("close");
+        break;
+      case "close":
+        setShowModal("open");
+        break;
+      default:
+        setShowModal("close");
+        break;
+    }
+  };
+
   return (
-    <Container>
-      <ShareBox>
-        <div>
-          <img src={process.env.PUBLIC_URL + "/images/user.svg"} />
-          <button>Start a post</button>
-        </div>
-        <div>
-          <button>
-            <img src={process.env.PUBLIC_URL + "/images/icon_image.svg"} />
-            <span>Photo</span>
-          </button>
-
-          <button>
-            <img src={process.env.PUBLIC_URL + "/images/icon_film.svg"} />
-            <span>Video</span>
-          </button>
-
-          <button>
-            <img src={process.env.PUBLIC_URL + "/images/icon_images.svg"} />
-            <span>Event</span>
-          </button>
-
-          <button>
-            <img
-              src={process.env.PUBLIC_URL + "/images/icon_document_alt.svg"}
-            />
-            <span>Write article</span>
-          </button>
-        </div>
-      </ShareBox>
-      <div>
-        <Article>
-          <SharedActor>
-            <a>
-              <img src={process.env.PUBLIC_URL + "/images/user.svg"} />
-              <div>
-                <span>Title</span>
-                <span>Info</span>
-                <span>Date</span>
-              </div>
-            </a>
-            <button>
-              <img src={process.env.PUBLIC_URL + "/images/social_flickr.svg"} />
-              <img src={process.env.PUBLIC_URL + "/images/social_flickr.svg"} />
-            </button>
-          </SharedActor>
-          <Description>Description</Description>
-          <SharedImg>
-            <a>
-              <img src={process.env.PUBLIC_URL + "/images/hared-image.jpg"} />
-            </a>
-          </SharedImg>
-          <SocialCounts>
-            <li>
-              <button>
-                <img src={process.env.PUBLIC_URL + "/images/like.svg"} />
-                <img src={process.env.PUBLIC_URL + "/images/clapping.svg"} />
-                <span>75</span>
+    <>
+      {props.articles.length === 0 ? (
+        <p>There are no articles</p>
+      ) : (
+        <Container>
+          <ShareBox>
+            <div>
+              {props.user && props.user.photoURL ? (
+                <img src={props.user.photoURL} />
+              ) : (
+                <img src={process.env.PUBLIC_URL + "/images/user.svg"} />
+              )}
+              <button
+                onClick={handleClick}
+                disabled={props.loading ? true : false}
+              >
+                Start a post
               </button>
-            </li>
-            <li>
-              <a>2 comments</a>
-            </li>
-          </SocialCounts>
-          <SocialActions>
-            <button>
-              <img src={process.env.PUBLIC_URL + "/images/icon_like_alt.svg"} />
-              <span>Like</span>
-            </button>
-            <button>
-              <img src={process.env.PUBLIC_URL + "/images/icon_comment.svg"} />
-              <span>Comments</span>
-            </button>
-            <button>
-              <img src={process.env.PUBLIC_URL + "/images/social_share.svg"} />
-              <span>Share</span>
-            </button>
-            <button>
-              <img
-                src={process.env.PUBLIC_URL + "/images/arrow_right-up_alt.svg"}
-              />
-              <span>Send</span>
-            </button>
-          </SocialActions>
-        </Article>
-      </div>
-      <PostModal />
-    </Container>
+            </div>
+            <div>
+              <button>
+                <img src={process.env.PUBLIC_URL + "/images/icon_image.svg"} />
+                <span>Photo</span>
+              </button>
+
+              <button>
+                <img src={process.env.PUBLIC_URL + "/images/icon_film.svg"} />
+                <span>Video</span>
+              </button>
+
+              <button>
+                <img src={process.env.PUBLIC_URL + "/images/icon_images.svg"} />
+                <span>Event</span>
+              </button>
+
+              <button>
+                <img
+                  src={process.env.PUBLIC_URL + "/images/icon_document_alt.svg"}
+                />
+                <span>Write article</span>
+              </button>
+            </div>
+          </ShareBox>
+          <Content>
+            {props.loading && (
+              <img src={process.env.PUBLIC_URL + "/images/icon_loading.svg"} />
+            )}
+            {props.articles.length > 0 &&
+              props.articles.map((article, key) => (
+                <Article key={key}>
+                  <SharedActor>
+                    <a>
+                      <img src={article.actor.image} />
+                      <div>
+                        <span>{article.actor.title}</span>
+                        <span>{article.actor.description}</span>
+                        <span>
+                          {article.actor.date.toDate().toLocaleDateString()}
+                        </span>
+                      </div>
+                    </a>
+                    <button>
+                      <img
+                        src={
+                          process.env.PUBLIC_URL + "/images/social_flickr.svg"
+                        }
+                      />
+                      <img
+                        src={
+                          process.env.PUBLIC_URL + "/images/social_flickr.svg"
+                        }
+                      />
+                    </button>
+                  </SharedActor>
+                  <Description>{article.description}</Description>
+                  <SharedImg>
+                    <a>
+                      {!article.sharedImg && article.video ? (
+                        <ReactPlayer width={"100%"} url={article.video} />
+                      ) : (
+                        article.sharedImg && <img src={article.sharedImg} />
+                      )}
+                    </a>
+                  </SharedImg>
+                  <SocialCounts>
+                    <li>
+                      <button>
+                        <img
+                          src={process.env.PUBLIC_URL + "/images/like.svg"}
+                        />
+                        <img
+                          src={process.env.PUBLIC_URL + "/images/clapping.svg"}
+                        />
+                        <span>75</span>
+                      </button>
+                    </li>
+                    <li>
+                      <a>{article.comments}</a>
+                    </li>
+                  </SocialCounts>
+                  <SocialActions>
+                    <button>
+                      <img
+                        src={
+                          process.env.PUBLIC_URL + "/images/icon_like_alt.svg"
+                        }
+                      />
+                      <span>Like</span>
+                    </button>
+                    <button>
+                      <img
+                        src={
+                          process.env.PUBLIC_URL + "/images/icon_comment.svg"
+                        }
+                      />
+                      <span>Comments</span>
+                    </button>
+                    <button>
+                      <img
+                        src={
+                          process.env.PUBLIC_URL + "/images/social_share.svg"
+                        }
+                      />
+                      <span>Share</span>
+                    </button>
+                    <button>
+                      <img
+                        src={
+                          process.env.PUBLIC_URL +
+                          "/images/arrow_right-up_alt.svg"
+                        }
+                      />
+                      <span>Send</span>
+                    </button>
+                  </SocialActions>
+                </Article>
+              ))}
+          </Content>
+          <PostModal showModal={showModal} handleClick={handleClick} />
+        </Container>
+      )}
+    </>
   );
 };
 
@@ -263,6 +346,8 @@ const SocialCounts = styled.ul`
     font-size: 12px;
     button {
       display: flex;
+      border: none;
+      background-color: white;
     }
   }
 `;
@@ -279,6 +364,8 @@ const SocialActions = styled.div`
     align-items: center;
     padding: 8px;
     color: #0a66c2;
+    border: none;
+    background-color: white;
     img {
       width: 20px;
     }
@@ -290,4 +377,24 @@ const SocialActions = styled.div`
   }
 `;
 
-export default Main;
+const Content = styled.div`
+  text-align: center;
+  & > img {
+    width: 30px;
+    animation: rotation 1s infinite linear;
+  }
+`;
+
+const mapStateToProps = (state) => {
+  return {
+    loading: state.articleState.loading,
+    user: state.userState.user,
+    articles: state.articleState.articles,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  getArticles: () => dispatch(getArticlesAPI()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Main);
