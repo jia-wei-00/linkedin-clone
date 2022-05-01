@@ -7,6 +7,7 @@ import {
 import "./App.css";
 import Header from "./components/Header";
 import Home from "./components/Home";
+import Test from "./components/Test";
 import Login from "./components/Login";
 import { getUserAuth } from "./actions";
 import { connect } from "react-redux";
@@ -30,6 +31,7 @@ function App(props) {
               </>
             }
           />
+          <Route path="/test" element={<Test />} />
         </Switch>
       </Router>
     </div>
